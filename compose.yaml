@@ -1,0 +1,37 @@
+name: is6303
+
+services:
+  db:
+    # ParadeDB bundles pg_search (BM25) and pgvector, and preconfigures
+    # shared_preload_libraries. Its bootstrap creates both extensions in
+    # POSTGRES_DB and in template1, so no extension DDL is needed here.
+    #
+    # The Postgres major is pinned deliberately: PGDATA is version-scoped, so a
+    # floating `latest` can silently initdb an empty cluster into this volume.
+    # See docs/adr/0001-paradedb-for-hybrid-search.md.
+    image: paradedb/paradedb:pg17
+    container_name: is6303-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-recipes}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (cp .env.example .env)}
+      POSTGRES_DB: ${POSTGRES_DB:-recipes}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Mounted at /var/lib/postgresql/, not /var/lib/postgresql/data: the
+      # parent is correct for every ParadeDB tag, the child only for pg17-.
+      - pgdata:/var/lib/postgresql/
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  pgdata:
