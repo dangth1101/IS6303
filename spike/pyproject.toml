@@ -1,0 +1,17 @@
+[project]
+name = "recipe-retrieval-spike"
+version = "0.1.0"
+description = "Throwaway spike: dense retrieval over a sample of the Shengtao/recipe corpus"
+requires-python = ">=3.12"
+dependencies = [
+    # nomic-embed-text-v1.5 ships remote code that calls
+    # `get_extended_attention_mask`, removed in transformers 5.x. Without this pin
+    # the model fails at forward() with an AttributeError. See issue #12.
+    "transformers>=4.44,<5",
+    "sentence-transformers>=3.0,<5",
+    "einops>=0.8",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "fastapi>=0.115",
+    "uvicorn>=0.32",
+]
